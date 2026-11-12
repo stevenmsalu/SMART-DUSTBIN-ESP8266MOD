@@ -12,7 +12,7 @@ Intelligent waste bin firmware for **LoLin NodeMCU V3 (ESP8266MOD)** with approa
 | Area | Status |
 |------|--------|
 | Repository documentation (WP-0) | **Complete** |
-| Integrated product firmware | **WP-6** — fill LEDs + lid + sensors (`SmartDustbin/`) |
+| Integrated product firmware | **WP-7** — unified app status + subsystems (`SmartDustbin/`) |
 | Buzzer test sketch | Present (`smart-dustbin-programme/`) — diagnostic only (preserved) |
 | Sensors, servo, LEDs, fill logic | **Planned** |
 | Wi-Fi, HTTP API, on-device dashboard | **Planned** |
@@ -150,6 +150,7 @@ No extra libraries are required for the current buzzer test sketch. Future work 
 | [`docs/WP-4_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-4_COMPLETION_REPORT_CASE-20261112.md) | WP-4 fill percentage evidence |
 | [`docs/WP-5_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-5_COMPLETION_REPORT_CASE-20261112.md) | WP-5 automatic lid control evidence |
 | [`docs/WP-6_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-6_COMPLETION_REPORT_CASE-20261112.md) | WP-6 LED fill indicators evidence |
+| [`docs/WP-7_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-7_COMPLETION_REPORT_CASE-20261112.md) | WP-7 application status integration |
 
 ---
 

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "application_status.h"
 #include "approach_sensor.h"
 #include "config.h"
 #include "gpio_init.h"
@@ -14,8 +15,8 @@ static unsigned long s_lastHeartbeatMs = 0;
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-6"));
-  Serial.println(F(" Lid + fill LEDs"));
+  Serial.println(F(" Smart Dustbin — WP-7"));
+  Serial.println(F(" Application status integration"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
   Serial.println(CONFIG_SERIAL_BAUD);
@@ -129,7 +130,7 @@ void setup() {
   ledStatusBegin();
 
   printBootBanner();
-  Serial.println(F("[boot] scheduler + fill + lid + LEDs ready."));
+  Serial.println(F("[boot] scheduler + fill + lid + LEDs + app status ready."));
 }
 
 void loop() {
@@ -154,6 +155,11 @@ void loop() {
 
   if (now - s_lastHeartbeatMs >= CONFIG_HEARTBEAT_MS) {
     s_lastHeartbeatMs = now;
+
+    ApplicationStatusSnapshot snapshot;
+    applicationStatusGetSnapshot(now, snapshot);
+    applicationStatusPrintDiagnostic(snapshot);
+
     Serial.print(F("[heartbeat] uptime_ms="));
     Serial.print(now);
     Serial.print(F(" approach_detected="));
