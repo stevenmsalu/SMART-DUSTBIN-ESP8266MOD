@@ -13,9 +13,7 @@ void gpioInitSafeOutputsAndInputs() {
   pinMode(PIN_APPROACH_ECHO, INPUT);
   pinMode(PIN_WASTE_ECHO, INPUT);
 
-  // Servo signal: static LOW until WP-5 (no Servo library / no PWM)
-  pinMode(PIN_SERVO_SIGNAL, OUTPUT);
-  digitalWrite(PIN_SERVO_SIGNAL, LOW);
+  // Servo D7: initialised by lid_control (WP-5); leave pin untouched here.
 
   // Indicators off (active HIGH wiring: LOW = off)
   pinMode(PIN_LED_WHITE, OUTPUT);

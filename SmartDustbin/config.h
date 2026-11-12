@@ -32,13 +32,14 @@
 #define CONFIG_WASTE_EMPTY_REF_CM 40
 #define CONFIG_WASTE_FULL_REF_CM 10
 
+// --- Servo / lid (WP-5) — PROVISIONAL; calibrate on physical bin ---
+#define CONFIG_SERVO_ANGLE_CLOSED 30
+#define CONFIG_SERVO_ANGLE_OPEN 120
+#define CONFIG_LID_CLOSE_DELAY_MS 2000UL
+
 // --- Not yet implemented (later work packages) ---
 
 // #define CONFIG_WARN_FILL_PERCENT       TBD
-
-// Servo (WP-5+)
-// #define CONFIG_SERVO_ANGLE_OPEN        TBD
-// #define CONFIG_SERVO_ANGLE_CLOSED      TBD
 
 // Buzzer (later WP; GPIO2 not driven)
 // #define CONFIG_BUZZER_ALERT_MS         TBD

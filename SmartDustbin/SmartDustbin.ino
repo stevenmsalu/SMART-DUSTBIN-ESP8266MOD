@@ -4,6 +4,7 @@
 #include "config.h"
 #include "gpio_init.h"
 #include "ultrasonic_scheduler.h"
+#include "lid_control.h"
 #include "waste_fill_level.h"
 #include "waste_sensor.h"
 
@@ -12,8 +13,8 @@ static unsigned long s_lastHeartbeatMs = 0;
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-4"));
-  Serial.println(F(" Fill % from waste distance"));
+  Serial.println(F(" Smart Dustbin — WP-5"));
+  Serial.println(F(" Approach lid + fill %"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
   Serial.println(CONFIG_SERIAL_BAUD);
@@ -34,6 +35,12 @@ static void printBootBanner() {
   Serial.print(F(" ms | Quiet: "));
   Serial.print(CONFIG_ULTRASONIC_QUIET_MS);
   Serial.println(F(" ms"));
+  Serial.print(F("Lid angles (PROVISIONAL): closed="));
+  Serial.print(CONFIG_SERVO_ANGLE_CLOSED);
+  Serial.print(F(" open="));
+  Serial.print(CONFIG_SERVO_ANGLE_OPEN);
+  Serial.print(F(" close_delay_ms="));
+  Serial.println(CONFIG_LID_CLOSE_DELAY_MS);
 
   if (!wasteFillLevelIsCalibrationValid()) {
     Serial.println(F("[cal] ERROR: empty_ref must be > full_ref"));
@@ -112,13 +119,16 @@ void setup() {
   wasteSensorBegin();
   wasteFillLevelBegin();
   ultrasonicSchedulerBegin();
+  lidControlBegin();
 
   printBootBanner();
-  Serial.println(F("[boot] GPIO idle + scheduler + waste fill level ready."));
+  Serial.println(F("[boot] scheduler + fill level + lid control ready."));
 }
 
 void loop() {
   const unsigned long now = millis();
+
+  lidControlUpdate(now, approachSensorIsApproachDetected());
 
   const UltrasonicMeasurementKind kind = ultrasonicSchedulerTick(now);
 
@@ -160,6 +170,14 @@ void loop() {
     }
     Serial.print(F(" fill_ever_valid="));
     Serial.print(wasteFillLevelHasValidPercent() ? 1 : 0);
+
+    Serial.print(F(" lid="));
+    Serial.print(lidControlGetLidState() == LidPositionState::Open ? F("OPEN")
+                                                                 : F("CLOSED"));
+    Serial.print(F(" servo_target_deg="));
+    Serial.print(lidControlGetServoTargetAngle());
+    Serial.print(F(" close_pending="));
+    Serial.print(lidControlIsCloseDelayPending() ? 1 : 0);
 
     Serial.println();
   }
