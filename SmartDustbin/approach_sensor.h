@@ -12,9 +12,8 @@ struct ApproachSensorReading {
 
 void approachSensorBegin();
 
-// Call each loop; runs a measurement when the sample interval has elapsed.
-// Returns true when a new reading was taken (valid or invalid).
-bool approachSensorUpdate(unsigned long nowMs);
+// Invoked only by ultrasonic_scheduler (one HC-SR04 active at a time).
+void approachSensorRunMeasurement();
 
 void approachSensorGetReading(ApproachSensorReading& out);
 

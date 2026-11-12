@@ -12,7 +12,7 @@ Intelligent waste bin firmware for **LoLin NodeMCU V3 (ESP8266MOD)** with approa
 | Area | Status |
 |------|--------|
 | Repository documentation (WP-0) | **Complete** |
-| Integrated product firmware | **WP-2** — approach HC-SR04 + Serial (`SmartDustbin/`) |
+| Integrated product firmware | **WP-3** — dual HC-SR04 (scheduled) + Serial (`SmartDustbin/`) |
 | Buzzer test sketch | Present (`smart-dustbin-programme/`) — diagnostic only (preserved) |
 | Sensors, servo, LEDs, fill logic | **Planned** |
 | Wi-Fi, HTTP API, on-device dashboard | **Planned** |
@@ -146,6 +146,7 @@ No extra libraries are required for the current buzzer test sketch. Future work 
 | [`docs/WP-0_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-0_COMPLETION_REPORT_CASE-20261112.md) | WP-0 delivery evidence |
 | [`docs/WP-1_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-1_COMPLETION_REPORT_CASE-20261112.md) | WP-1 firmware foundation evidence |
 | [`docs/WP-2_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-2_COMPLETION_REPORT_CASE-20261112.md) | WP-2 approach sensor evidence |
+| [`docs/WP-3_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-3_COMPLETION_REPORT_CASE-20261112.md) | WP-3 waste sensor + scheduler evidence |
 
 ---
 

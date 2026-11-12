@@ -7,6 +7,12 @@
 
 #define CONFIG_HEARTBEAT_MS 5000UL
 
+// Shared HC-SR04 timing (round-trip µs per cm)
+#define CONFIG_HCSR04_US_PER_CM 58UL
+
+// Coordination — only one TRIG active; quiet after each measurement (WP-3)
+#define CONFIG_ULTRASONIC_QUIET_MS 60UL
+
 // --- Approach sensor (WP-2) — provisional development defaults ---
 #define CONFIG_APPROACH_DETECT_CM 50
 #define CONFIG_APPROACH_CLEAR_CM 55
@@ -14,12 +20,16 @@
 #define CONFIG_APPROACH_PULSE_TIMEOUT_US 30000UL
 #define CONFIG_APPROACH_MIN_VALID_CM 2
 #define CONFIG_APPROACH_MAX_VALID_CM 400
-// round-trip time to cm: speed of sound ~343 m/s => ~58 µs per cm (round trip)
-#define CONFIG_APPROACH_US_PER_CM 58UL
+
+// --- Waste sensor (WP-3) — raw distance only ---
+#define CONFIG_WASTE_SAMPLE_MS 500UL
+#define CONFIG_WASTE_PULSE_TIMEOUT_US 30000UL
+#define CONFIG_WASTE_MIN_VALID_CM 2
+#define CONFIG_WASTE_MAX_VALID_CM 400
 
 // --- Not yet implemented (later work packages) ---
 
-// Waste level (WP-3+)
+// Waste fill % / calibration (WP-4+)
 // #define CONFIG_WASTE_EMPTY_CM          TBD
 // #define CONFIG_WASTE_FULL_CM           TBD
 // #define CONFIG_WARN_FILL_PERCENT       TBD
@@ -28,7 +38,7 @@
 // #define CONFIG_SERVO_ANGLE_OPEN        TBD
 // #define CONFIG_SERVO_ANGLE_CLOSED      TBD
 
-// Buzzer (later WP; GPIO2 not driven in WP-2)
+// Buzzer (later WP; GPIO2 not driven)
 // #define CONFIG_BUZZER_ALERT_MS         TBD
 // #define CONFIG_BUZZER_COOLDOWN_MS      TBD
 
