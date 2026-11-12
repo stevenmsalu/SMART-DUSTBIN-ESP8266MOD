@@ -4,19 +4,21 @@
 #include "approach_sensor.h"
 #include "config.h"
 #include "gpio_init.h"
+#include "http_api.h"
 #include "ultrasonic_scheduler.h"
 #include "led_status.h"
 #include "lid_control.h"
 #include "waste_fill_level.h"
 #include "waste_sensor.h"
+#include "wifi_manager.h"
 
 static unsigned long s_lastHeartbeatMs = 0;
 
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-7"));
-  Serial.println(F(" Application status integration"));
+  Serial.println(F(" Smart Dustbin — WP-8"));
+  Serial.println(F(" Wi-Fi + HTTP API (monitoring)"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
   Serial.println(CONFIG_SERIAL_BAUD);
@@ -128,9 +130,11 @@ void setup() {
   ultrasonicSchedulerBegin();
   lidControlBegin();
   ledStatusBegin();
+  wifiManagerBegin();
+  httpApiBegin();
 
   printBootBanner();
-  Serial.println(F("[boot] scheduler + fill + lid + LEDs + app status ready."));
+  Serial.println(F("[boot] subsystems + Wi-Fi + HTTP ready (hardware works offline)."));
 }
 
 void loop() {
@@ -152,6 +156,8 @@ void loop() {
   }
 
   ledStatusUpdate();
+  wifiManagerUpdate(now);
+  httpApiHandleClient();
 
   if (now - s_lastHeartbeatMs >= CONFIG_HEARTBEAT_MS) {
     s_lastHeartbeatMs = now;

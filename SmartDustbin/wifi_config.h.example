@@ -1,5 +1,5 @@
 // Copy this file to wifi_config.h in this folder (wifi_config.h is gitignored).
-// Wi-Fi is not used until a later work package (WP-7+).
+// Required for WP-8 Wi-Fi / HTTP (monitoring-only API).
 
 #pragma once
 

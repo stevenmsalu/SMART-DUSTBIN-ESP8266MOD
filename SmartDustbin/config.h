@@ -7,6 +7,10 @@
 
 #define CONFIG_HEARTBEAT_MS 5000UL
 
+// --- Wi-Fi (WP-8) ---
+#define CONFIG_WIFI_RECONNECT_INTERVAL_MS 10000UL
+#define CONFIG_HTTP_PORT 80
+
 // Shared HC-SR04 timing (round-trip µs per cm)
 #define CONFIG_HCSR04_US_PER_CM 58UL
 
