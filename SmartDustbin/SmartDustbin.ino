@@ -4,6 +4,7 @@
 #include "config.h"
 #include "gpio_init.h"
 #include "ultrasonic_scheduler.h"
+#include "led_status.h"
 #include "lid_control.h"
 #include "waste_fill_level.h"
 #include "waste_sensor.h"
@@ -13,8 +14,8 @@ static unsigned long s_lastHeartbeatMs = 0;
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-5"));
-  Serial.println(F(" Approach lid + fill %"));
+  Serial.println(F(" Smart Dustbin — WP-6"));
+  Serial.println(F(" Lid + fill LEDs"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
   Serial.println(CONFIG_SERIAL_BAUD);
@@ -41,6 +42,11 @@ static void printBootBanner() {
   Serial.print(CONFIG_SERVO_ANGLE_OPEN);
   Serial.print(F(" close_delay_ms="));
   Serial.println(CONFIG_LID_CLOSE_DELAY_MS);
+  Serial.print(F("LED warn/clear: "));
+  Serial.print(CONFIG_WARN_FILL_PERCENT);
+  Serial.print(F("% / "));
+  Serial.print(CONFIG_WARN_CLEAR_PERCENT);
+  Serial.println(F("% (provisional)"));
 
   if (!wasteFillLevelIsCalibrationValid()) {
     Serial.println(F("[cal] ERROR: empty_ref must be > full_ref"));
@@ -120,9 +126,10 @@ void setup() {
   wasteFillLevelBegin();
   ultrasonicSchedulerBegin();
   lidControlBegin();
+  ledStatusBegin();
 
   printBootBanner();
-  Serial.println(F("[boot] scheduler + fill level + lid control ready."));
+  Serial.println(F("[boot] scheduler + fill + lid + LEDs ready."));
 }
 
 void loop() {
@@ -142,6 +149,8 @@ void loop() {
     wasteFillLevelApplyReading(reading);
     printWasteReading(reading);
   }
+
+  ledStatusUpdate();
 
   if (now - s_lastHeartbeatMs >= CONFIG_HEARTBEAT_MS) {
     s_lastHeartbeatMs = now;
@@ -178,6 +187,23 @@ void loop() {
     Serial.print(lidControlGetServoTargetAngle());
     Serial.print(F(" close_pending="));
     Serial.print(lidControlIsCloseDelayPending() ? 1 : 0);
+
+    Serial.print(F(" led="));
+    switch (ledStatusGetState()) {
+      case LedFillIndicatorState::Normal:
+        Serial.print(F("NORMAL"));
+        break;
+      case LedFillIndicatorState::Warning:
+        Serial.print(F("WARNING"));
+        break;
+      default:
+        Serial.print(F("UNKNOWN"));
+        break;
+    }
+    Serial.print(F(" white="));
+    Serial.print(ledStatusGetWhiteOn() ? 1 : 0);
+    Serial.print(F(" yellow="));
+    Serial.print(ledStatusGetYellowOn() ? 1 : 0);
 
     Serial.println();
   }

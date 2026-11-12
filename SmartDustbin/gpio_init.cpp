@@ -15,11 +15,7 @@ void gpioInitSafeOutputsAndInputs() {
 
   // Servo D7: initialised by lid_control (WP-5); leave pin untouched here.
 
-  // Indicators off (active HIGH wiring: LOW = off)
-  pinMode(PIN_LED_WHITE, OUTPUT);
-  digitalWrite(PIN_LED_WHITE, LOW);
-  pinMode(PIN_LED_YELLOW, OUTPUT);
-  digitalWrite(PIN_LED_YELLOW, LOW);
+  // D0/D3 LEDs: configured by led_status (WP-6).
 
-  // D4 / GPIO2 buzzer: not configured in WP-2 (physically disconnected; boot strap)
+  // D4 / GPIO2 buzzer: not configured (physically disconnected; boot strap)
 }
