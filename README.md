@@ -12,7 +12,7 @@ Intelligent waste bin firmware for **LoLin NodeMCU V3 (ESP8266MOD)** with approa
 | Area | Status |
 |------|--------|
 | Repository documentation (WP-0) | **Complete** |
-| Integrated product firmware | **WP-8** — Wi-Fi + HTTP API + subsystems (`SmartDustbin/`) |
+| Integrated product firmware | **WP-9** — on-device dashboard + API (`SmartDustbin/`) |
 | Buzzer test sketch | Present (`smart-dustbin-programme/`) — diagnostic only (preserved) |
 | Sensors, servo, LEDs, fill logic | **Planned** |
 | Wi-Fi, HTTP API, on-device dashboard | **Planned** |
@@ -152,8 +152,11 @@ No extra libraries are required for the current buzzer test sketch. Future work 
 | [`docs/WP-6_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-6_COMPLETION_REPORT_CASE-20261112.md) | WP-6 LED fill indicators evidence |
 | [`docs/WP-7_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-7_COMPLETION_REPORT_CASE-20261112.md) | WP-7 application status integration |
 | [`docs/WP-8_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-8_COMPLETION_REPORT_CASE-20261112.md) | WP-8 Wi-Fi and HTTP API |
+| [`docs/WP-9_COMPLETION_REPORT_CASE-20261112.md`](docs/WP-9_COMPLETION_REPORT_CASE-20261112.md) | WP-9 local monitoring dashboard |
 
 **Wi-Fi:** Copy `SmartDustbin/wifi_config.h.example` to `wifi_config.h` (gitignored) before upload.
+
+**Dashboard:** On LAN, open `http://<device-ip>/` (monitoring only).
 
 ---
 

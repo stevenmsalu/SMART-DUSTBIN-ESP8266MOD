@@ -3,6 +3,7 @@
 
 #include "application_status.h"
 #include "config.h"
+#include "dashboard_page.h"
 #include "http_api.h"
 #include "wifi_manager.h"
 
@@ -101,6 +102,11 @@ static void writeStatusJson(Print& out, const ApplicationStatusSnapshot& snap) {
   out.print(F("}}"));
 }
 
+static void handleDashboardRoot() {
+  s_server.send_P(200, PSTR("text/html"), DASHBOARD_HTML);
+  Serial.println(F("[http] GET /"));
+}
+
 static void handleApiStatus() {
   ApplicationStatusSnapshot snap;
   applicationStatusGetSnapshot(millis(), snap);
@@ -143,6 +149,7 @@ static void handleApiHealth() {
 }
 
 void httpApiBegin() {
+  s_server.on(F("/"), HTTP_GET, handleDashboardRoot);
   s_server.on(F("/api/status"), HTTP_GET, handleApiStatus);
   s_server.on(F("/api/health"), HTTP_GET, handleApiHealth);
   s_server.begin();

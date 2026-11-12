@@ -17,8 +17,8 @@ static unsigned long s_lastHeartbeatMs = 0;
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-8"));
-  Serial.println(F(" Wi-Fi + HTTP API (monitoring)"));
+  Serial.println(F(" Smart Dustbin — WP-9"));
+  Serial.println(F(" Dashboard + HTTP API"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
   Serial.println(CONFIG_SERIAL_BAUD);
@@ -134,7 +134,7 @@ void setup() {
   httpApiBegin();
 
   printBootBanner();
-  Serial.println(F("[boot] subsystems + Wi-Fi + HTTP ready (hardware works offline)."));
+  Serial.println(F("[boot] subsystems + Wi-Fi + HTTP + dashboard ready."));
 }
 
 void loop() {
