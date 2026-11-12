@@ -4,6 +4,7 @@
 #include "config.h"
 #include "gpio_init.h"
 #include "ultrasonic_scheduler.h"
+#include "waste_fill_level.h"
 #include "waste_sensor.h"
 
 static unsigned long s_lastHeartbeatMs = 0;
@@ -11,8 +12,8 @@ static unsigned long s_lastHeartbeatMs = 0;
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-3"));
-  Serial.println(F(" Dual HC-SR04 (scheduled)"));
+  Serial.println(F(" Smart Dustbin — WP-4"));
+  Serial.println(F(" Fill % from waste distance"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
   Serial.println(CONFIG_SERIAL_BAUD);
@@ -21,6 +22,11 @@ static void printBootBanner() {
   Serial.print(F(" cm | clear >= "));
   Serial.print(CONFIG_APPROACH_CLEAR_CM);
   Serial.println(F(" cm"));
+  Serial.print(F("Waste refs (PROVISIONAL): empty="));
+  Serial.print(CONFIG_WASTE_EMPTY_REF_CM);
+  Serial.print(F(" cm full="));
+  Serial.print(CONFIG_WASTE_FULL_REF_CM);
+  Serial.println(F(" cm — not physically calibrated"));
   Serial.print(F("Approach sample: "));
   Serial.print(CONFIG_APPROACH_SAMPLE_MS);
   Serial.print(F(" ms | Waste sample: "));
@@ -28,6 +34,11 @@ static void printBootBanner() {
   Serial.print(F(" ms | Quiet: "));
   Serial.print(CONFIG_ULTRASONIC_QUIET_MS);
   Serial.println(F(" ms"));
+
+  if (!wasteFillLevelIsCalibrationValid()) {
+    Serial.println(F("[cal] ERROR: empty_ref must be > full_ref"));
+  }
+
   Serial.println();
 }
 
@@ -53,19 +64,43 @@ static void printApproachReading(const ApproachSensorReading& r, bool approach) 
 
 static void printWasteReading(const WasteSensorReading& r) {
   Serial.print(F("[waste] "));
+  Serial.print(F("measurement_valid="));
+  Serial.print(r.valid ? 1 : 0);
 
   if (r.valid) {
-    Serial.print(F("distance_cm="));
+    Serial.print(F(" distance_cm="));
     Serial.print(r.distanceCm);
-    Serial.println(F(" valid=1"));
   } else if (r.timedOut) {
-    Serial.println(F("valid=0 reason=timeout"));
+    Serial.print(F(" reason=timeout"));
   } else if (r.outOfRange) {
-    Serial.print(F("valid=0 reason=out_of_range raw_cm="));
-    Serial.println(r.distanceCm);
-  } else {
-    Serial.println(F("valid=0 reason=unknown"));
+    Serial.print(F(" reason=out_of_range raw_cm="));
+    Serial.print(r.distanceCm);
   }
+
+  Serial.print(F(" | cal_valid="));
+  Serial.print(wasteFillLevelIsCalibrationValid() ? 1 : 0);
+
+  if (r.valid && !wasteFillLevelIsCalibrationValid()) {
+    Serial.print(F(" cal_error=empty_ref_le_full_ref"));
+  }
+
+  Serial.print(F(" | fill_pct="));
+  uint8_t fillPct = 0;
+  if (wasteFillLevelGetLastValidPercent(fillPct)) {
+    Serial.print(fillPct);
+    Serial.print(F(" fill_ever_valid=1"));
+  } else {
+    Serial.print(F("none fill_ever_valid="));
+    Serial.print(wasteFillLevelHasValidPercent() ? 1 : 0);
+  }
+
+  uint16_t lastDist = 0;
+  if (wasteSensorGetLastValidDistance(lastDist)) {
+    Serial.print(F(" | waste_last_valid_cm="));
+    Serial.print(lastDist);
+  }
+
+  Serial.println();
 }
 
 void setup() {
@@ -75,10 +110,11 @@ void setup() {
   gpioInitSafeOutputsAndInputs();
   approachSensorBegin();
   wasteSensorBegin();
+  wasteFillLevelBegin();
   ultrasonicSchedulerBegin();
 
   printBootBanner();
-  Serial.println(F("[boot] GPIO idle + dual ultrasonic scheduler ready."));
+  Serial.println(F("[boot] GPIO idle + scheduler + waste fill level ready."));
 }
 
 void loop() {
@@ -93,6 +129,7 @@ void loop() {
   } else if (kind == UltrasonicMeasurementKind::Waste) {
     WasteSensorReading reading;
     wasteSensorGetReading(reading);
+    wasteFillLevelApplyReading(reading);
     printWasteReading(reading);
   }
 
@@ -110,6 +147,20 @@ void loop() {
     } else {
       Serial.print(F(" waste_last_valid_cm=none"));
     }
+
+    Serial.print(F(" cal_valid="));
+    Serial.print(wasteFillLevelIsCalibrationValid() ? 1 : 0);
+
+    uint8_t fillPct = 0;
+    if (wasteFillLevelGetLastValidPercent(fillPct)) {
+      Serial.print(F(" fill_pct="));
+      Serial.print(fillPct);
+    } else {
+      Serial.print(F(" fill_pct=none"));
+    }
+    Serial.print(F(" fill_ever_valid="));
+    Serial.print(wasteFillLevelHasValidPercent() ? 1 : 0);
+
     Serial.println();
   }
 }

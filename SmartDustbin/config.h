@@ -27,11 +27,13 @@
 #define CONFIG_WASTE_MIN_VALID_CM 2
 #define CONFIG_WASTE_MAX_VALID_CM 400
 
+// --- Waste fill calibration (WP-4) — PROVISIONAL, NOT physically measured ---
+// Replace after mounting sensor on the actual dustbin (docs/CALIBRATION_LOG.md).
+#define CONFIG_WASTE_EMPTY_REF_CM 40
+#define CONFIG_WASTE_FULL_REF_CM 10
+
 // --- Not yet implemented (later work packages) ---
 
-// Waste fill % / calibration (WP-4+)
-// #define CONFIG_WASTE_EMPTY_CM          TBD
-// #define CONFIG_WASTE_FULL_CM           TBD
 // #define CONFIG_WARN_FILL_PERCENT       TBD
 
 // Servo (WP-5+)
