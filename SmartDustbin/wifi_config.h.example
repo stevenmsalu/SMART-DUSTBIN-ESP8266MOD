@@ -1,0 +1,12 @@
+// Copy this file to wifi_config.h in this folder (wifi_config.h is gitignored).
+// Wi-Fi is not used until a later work package (WP-7+).
+
+#pragma once
+
+#ifndef SMART_DUSTBIN_WIFI_CONFIG_H
+#define SMART_DUSTBIN_WIFI_CONFIG_H
+
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PASSWORD "YOUR_PASSWORD"
+
+#endif
