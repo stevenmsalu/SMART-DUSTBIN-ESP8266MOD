@@ -1,106 +1,82 @@
 # Calibration log — Smart Dustbin (ESP8266)
 
 **Case ID:** `CASE-20261112-SMARTDUSTBIN-END-TO-END`  
-**Purpose:** Record **physical measurements** and acceptance for firmware constants.  
-**Rule:** Do **not** invent values. Use **TBD** until measured on hardware. Copy a row template for each new test session.
+**Product:** Simplified approach + lid + white LED (WP-11.1+)  
+**Purpose:** Record **physical measurements** and acceptance for firmware constants in `SmartDustbin/config.h`.  
+**Rule:** Do **not** invent **Accepted** values. Use measured data and session notes. **Provisional** firmware defaults are listed separately — they are **not** physical acceptance.
+
+---
+
+## Historical note (WP-11.1)
+
+The following were **removed** from the product and are **out of scope** for this log’s active workflow:
+
+- Waste-level HC-SR04 (D5/D6)
+- Fill percentage and warning hysteresis
+- Yellow LED and buzzer alerting
+
+See [`WP-11.1_COMPLETION_REPORT.md`](WP-11.1_COMPLETION_REPORT.md). Older sections that described those parameters are **not** maintained here.
 
 ---
 
 ## How to use this log
 
-1. Measure on the **assembled bin** under realistic conditions (lid state, liner, room noise, etc.).
-2. Fill in **Test date**, **Test conditions**, **Measured value**, **Observations**, and **Acceptance** (`Pending` / `Accepted` / `Rejected`).
-3. When a value is **Accepted**, mirror it into firmware `config.h` (later work package) and note the git tag or commit in **Observations**.
-4. Leave prior rows unchanged for traceability; add new rows when re-calibrating.
+1. Measure on the **assembled bin** under realistic conditions.
+2. For each parameter, record **Test date**, **Test conditions**, **Measured value**, **Observations**, and **Acceptance** (`Pending` / `Accepted` / `Rejected`).
+3. When a value is **Accepted**, update firmware `config.h` in a dedicated work package and cite the commit in **Observations**.
+4. Do **not** mark **Accepted** for Steven’s **provisional** defaults until a session row documents the measurement.
 
 ---
 
-## 1. Approach sensor — detection distance
+## Firmware defaults vs acceptance
 
-**Meaning:** Distance at which a person/object is considered “approaching” for lid open (after filtering/debounce in firmware).
+Values below in the **“Firmware default (provisional)”** column come from `config.h` at baseline `84b7ce9`. They are **development defaults**, **not** calibrated or accepted unless a row below is explicitly **Accepted**.
 
-| Parameter | Firmware key (planned) | Target unit | Value | Test date | Test conditions | Measured value | Observations | Acceptance |
-|-----------|------------------------|-------------|-------|-----------|-----------------|----------------|--------------|------------|
-| Approach trigger distance | `APPROACH_DETECT_CM` | cm | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Approach clear / farther distance (hysteresis) | `APPROACH_CLEAR_CM` | cm | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Min retrigger time | `APPROACH_RETRIGGER_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
+| Parameter | `config.h` symbol | Firmware default (provisional) | Physical acceptance |
+|-----------|-------------------|----------------------------------|---------------------|
+| Approach detect distance | `CONFIG_APPROACH_DETECT_CM` | **50** cm | **Pending** — **PROVISIONAL** |
+| Approach clear distance | `CONFIG_APPROACH_CLEAR_CM` | **55** cm | **Pending** — **PROVISIONAL** |
+| Lid closed angle | `CONFIG_SERVO_ANGLE_CLOSED` | **30**° | **Pending** — **PROVISIONAL** |
+| Lid open angle | `CONFIG_SERVO_ANGLE_OPEN` | **120**° | **Pending** — **PROVISIONAL** |
+| Close delay after clear | `CONFIG_LID_CLOSE_DELAY_MS` | **2000** ms | **Pending** |
+| Approach sample period | `CONFIG_APPROACH_SAMPLE_MS` | **100** ms | **Pending** |
+| Quiet after pulse | `CONFIG_ULTRASONIC_QUIET_MS` | **60** ms | **Pending** |
 
----
-
-## 2. Waste sensor — empty and full references
-
-**Meaning:** Distances from waste-level HC-SR04 to waste surface. Used to compute fill percentage:
-
-\[
-\text{fill \%} = f(\text{distance}, \text{empty\_cm}, \text{full\_cm})
-\]
-
-(Exact formula to be fixed in firmware WP; typically linear map between empty and full.)
-
-| Parameter | Firmware key (planned) | Target unit | Value | Test date | Test conditions | Measured value | Observations | Acceptance |
-|-----------|------------------------|-------------|-------|-----------|-----------------|----------------|--------------|------------|
-| Empty bin reference (surface far / min fill) | `WASTE_EMPTY_CM` | cm | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Full bin reference (surface near / max fill) | `WASTE_FULL_CM` | cm | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Invalid reading timeout | `HCSR04_TIMEOUT_US` | µs | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Max valid distance clamp | `WASTE_MAX_VALID_CM` | cm | **TBD** | TBD | TBD | TBD | TBD | Pending |
+**Steven confirmation (WP-11.6):** Approach **50 / 55 cm** and servo **30° / 120°** remain **PROVISIONAL** — do not document as measured or accepted.
 
 ---
 
-## 3. Waste-level warning threshold and hysteresis
+## 1. Approach sensor
 
-| Parameter | Firmware key (planned) | Target unit | Value | Test date | Test conditions | Measured value | Observations | Acceptance |
-|-----------|------------------------|-------------|-------|-----------|-----------------|----------------|--------------|------------|
-| Warning threshold (% fill) | `WARN_FILL_PERCENT` | % | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Clear warning hysteresis (% points) | `WARN_HYSTERESIS_PERCENT` | % | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Optional warning threshold (distance) | `WARN_DISTANCE_CM` | cm | **TBD** | TBD | TBD | TBD | TBD | Pending |
-
----
-
-## 4. Servo — lid angles
-
-Bench tests reference 30°, 90°, 150°; **open** and **closed** product angles are **TBD**.
-
-| Parameter | Firmware key (planned) | Target unit | Value | Test date | Test conditions | Measured value | Observations | Acceptance |
-|-----------|------------------------|-------------|-------|-----------|-----------------|----------------|--------------|------------|
-| Lid closed angle | `SERVO_ANGLE_CLOSED` | degrees | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Lid open angle | `SERVO_ANGLE_OPEN` | degrees | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Servo step / move duration limit | `SERVO_MOVE_TIMEOUT_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
+| Parameter | Unit | Firmware default (provisional) | Test date | Test conditions | Measured value | Observations | Acceptance |
+|-----------|------|----------------------------------|-----------|-----------------|----------------|--------------|------------|
+| Detect (latch near) | cm | 50 (`CONFIG_APPROACH_DETECT_CM`) | TBD | TBD | TBD | TBD | **Pending** |
+| Clear (latch far) | cm | 55 (`CONFIG_APPROACH_CLEAR_CM`) | TBD | TBD | TBD | TBD | **Pending** |
+| Sample period | ms | 100 (`CONFIG_APPROACH_SAMPLE_MS`) | TBD | TBD | TBD | TBD | **Pending** |
+| Pulse timeout | µs | 30000 (`CONFIG_APPROACH_PULSE_TIMEOUT_US`) | TBD | TBD | TBD | TBD | **Pending** |
+| Valid range min / max | cm | 2 / 400 (`CONFIG_APPROACH_MIN_VALID_CM` / `MAX`) | TBD | TBD | TBD | TBD | **Pending** |
+| Post-pulse quiet | ms | 60 (`CONFIG_ULTRASONIC_QUIET_MS`) | TBD | TBD | TBD | TBD | **Pending** |
 
 ---
 
-## 5. Lid open duration (dwell)
+## 2. Servo — lid angles
 
-| Parameter | Firmware key (planned) | Target unit | Value | Test date | Test conditions | Measured value | Observations | Acceptance |
-|-----------|------------------------|-------------|-------|-----------|-----------------|----------------|--------------|------------|
-| Minimum lid open time after approach | `LID_OPEN_DWELL_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Lid close delay after clear approach | `LID_CLOSE_DELAY_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
-
----
-
-## 6. Sensor sampling intervals
-
-| Parameter | Firmware key (planned) | Target unit | Value | Test date | Test conditions | Measured value | Observations | Acceptance |
-|-----------|------------------------|-------------|-------|-----------|-----------------|----------------|--------------|------------|
-| Approach sample period | `APPROACH_SAMPLE_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Waste level sample period | `FILL_SAMPLE_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Cross-sensor guard time (anti crosstalk) | `ULTRASONIC_GUARD_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Filter window (e.g. median N) | `DISTANCE_FILTER_N` | samples | **TBD** | TBD | TBD | TBD | TBD | Pending |
+| Parameter | Unit | Firmware default (provisional) | Test date | Test conditions | Measured value | Observations | Acceptance |
+|-----------|------|----------------------------------|-----------|-----------------|----------------|--------------|------------|
+| Closed angle | degrees | 30 (`CONFIG_SERVO_ANGLE_CLOSED`) | TBD | TBD | TBD | TBD | **Pending** — **PROVISIONAL** |
+| Open angle | degrees | 120 (`CONFIG_SERVO_ANGLE_OPEN`) | TBD | TBD | TBD | TBD | **Pending** — **PROVISIONAL** |
 
 ---
 
-## 7. Buzzer alert
+## 3. Lid close delay
 
-| Parameter | Firmware key (planned) | Target unit | Value | Test date | Test conditions | Measured value | Observations | Acceptance |
-|-----------|------------------------|-------------|-------|-----------|-----------------|----------------|--------------|------------|
-| Alert duration (warning entry) | `BUZZER_ALERT_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Cooldown between alerts | `BUZZER_COOLDOWN_MS` | ms | **TBD** | TBD | TBD | TBD | TBD | Pending |
-| Drive mode (HIGH vs tone frequency) | `BUZZER_USE_TONE` | bool / Hz | **TBD** | TBD | TBD | TBD | TBD | Pending |
+| Parameter | Unit | Firmware default (provisional) | Test date | Test conditions | Measured value | Observations | Acceptance |
+|-----------|------|----------------------------------|-----------|-----------------|----------------|--------------|------------|
+| Delay after approach clears | ms | 2000 (`CONFIG_LID_CLOSE_DELAY_MS`) | TBD | TBD | TBD | TBD | **Pending** |
 
 ---
 
-## 8. Session log (narrative)
-
-Use this section for free-form notes per calibration session.
+## 4. Session log (narrative)
 
 ### Session template
 
@@ -109,8 +85,7 @@ Session ID:
 Date:
 Tester:
 Hardware revision:
-Weather / environment:
-Bin liner / load state:
+Environment:
 Summary:
 Follow-up actions:
 ```
@@ -119,7 +94,7 @@ Follow-up actions:
 
 | Session ID | Date | Tester | Summary |
 |------------|------|--------|---------|
-| — | TBD | Steven | No calibration session recorded yet. |
+| — | TBD | Steven | No calibration session recorded as **Accepted** yet. Firmware uses provisional defaults above. |
 
 ---
 
@@ -127,3 +102,4 @@ Follow-up actions:
 
 - [`HARDWARE_GPIO_MAP.md`](HARDWARE_GPIO_MAP.md)
 - [`../README.md`](../README.md)
+- [`WP-11.6_DOCUMENTATION_AUDIT.md`](WP-11.6_DOCUMENTATION_AUDIT.md)

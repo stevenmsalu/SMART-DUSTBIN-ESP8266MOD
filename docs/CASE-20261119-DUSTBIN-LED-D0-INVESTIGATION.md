@@ -1,5 +1,7 @@
 # CASE-20261119-DUSTBIN-LED-D0 — White LED / GPIO16 Investigation
 
+> **Superseded for current operation (WP-11.2+):** This investigation analysed **fill-driven** white/yellow LED behaviour that no longer exists in firmware. The current product drives the white LED on **D0** from **lid state** (ON while the lid is open). Retain this file for historical traceability only; use [`WP-11.2_COMPLETION_REPORT.md`](WP-11.2_COMPLETION_REPORT.md) and [`HARDWARE_GPIO_MAP.md`](HARDWARE_GPIO_MAP.md) for the active product.
+
 **Case ID:** CASE-20261119-DUSTBIN-LED-D0  
 **Repository:** SMART-DUSTBIN-ESP8266MOD  
 **Mode:** Read-only firmware audit (no source changes, no upload)  
