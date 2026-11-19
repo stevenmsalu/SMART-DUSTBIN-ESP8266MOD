@@ -5,19 +5,33 @@
 #include "config.h"
 #include "gpio_init.h"
 #include "http_api.h"
-#include "ultrasonic_scheduler.h"
 #include "led_status.h"
 #include "lid_control.h"
-#include "waste_fill_level.h"
-#include "waste_sensor.h"
 #include "wifi_manager.h"
 
 static unsigned long s_lastHeartbeatMs = 0;
+static unsigned long s_quietUntilMs = 0;
+static unsigned long s_nextApproachMs = 0;
+
+static bool runApproachMeasurementIfDue(unsigned long nowMs) {
+  if (nowMs < s_quietUntilMs) {
+    return false;
+  }
+  if (nowMs < s_nextApproachMs) {
+    return false;
+  }
+
+  approachSensorRunMeasurement();
+  s_nextApproachMs = millis() + CONFIG_APPROACH_SAMPLE_MS;
+  s_quietUntilMs = millis() + CONFIG_ULTRASONIC_QUIET_MS;
+  return true;
+}
 
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-9"));
+  Serial.println(F(" Smart Dustbin — WP-11.1"));
+  Serial.println(F(" Approach + lid (waste removed)"));
   Serial.println(F(" Dashboard + HTTP API"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
@@ -27,15 +41,8 @@ static void printBootBanner() {
   Serial.print(F(" cm | clear >= "));
   Serial.print(CONFIG_APPROACH_CLEAR_CM);
   Serial.println(F(" cm"));
-  Serial.print(F("Waste refs (PROVISIONAL): empty="));
-  Serial.print(CONFIG_WASTE_EMPTY_REF_CM);
-  Serial.print(F(" cm full="));
-  Serial.print(CONFIG_WASTE_FULL_REF_CM);
-  Serial.println(F(" cm — not physically calibrated"));
   Serial.print(F("Approach sample: "));
   Serial.print(CONFIG_APPROACH_SAMPLE_MS);
-  Serial.print(F(" ms | Waste sample: "));
-  Serial.print(CONFIG_WASTE_SAMPLE_MS);
   Serial.print(F(" ms | Quiet: "));
   Serial.print(CONFIG_ULTRASONIC_QUIET_MS);
   Serial.println(F(" ms"));
@@ -49,11 +56,7 @@ static void printBootBanner() {
   Serial.print(CONFIG_WARN_FILL_PERCENT);
   Serial.print(F("% / "));
   Serial.print(CONFIG_WARN_CLEAR_PERCENT);
-  Serial.println(F("% (provisional)"));
-
-  if (!wasteFillLevelIsCalibrationValid()) {
-    Serial.println(F("[cal] ERROR: empty_ref must be > full_ref"));
-  }
+  Serial.println(F("% (provisional; WP-11.2)"));
 
   Serial.println();
 }
@@ -78,56 +81,14 @@ static void printApproachReading(const ApproachSensorReading& r, bool approach) 
   Serial.println(approach ? 1 : 0);
 }
 
-static void printWasteReading(const WasteSensorReading& r) {
-  Serial.print(F("[waste] "));
-  Serial.print(F("measurement_valid="));
-  Serial.print(r.valid ? 1 : 0);
-
-  if (r.valid) {
-    Serial.print(F(" distance_cm="));
-    Serial.print(r.distanceCm);
-  } else if (r.timedOut) {
-    Serial.print(F(" reason=timeout"));
-  } else if (r.outOfRange) {
-    Serial.print(F(" reason=out_of_range raw_cm="));
-    Serial.print(r.distanceCm);
-  }
-
-  Serial.print(F(" | cal_valid="));
-  Serial.print(wasteFillLevelIsCalibrationValid() ? 1 : 0);
-
-  if (r.valid && !wasteFillLevelIsCalibrationValid()) {
-    Serial.print(F(" cal_error=empty_ref_le_full_ref"));
-  }
-
-  Serial.print(F(" | fill_pct="));
-  uint8_t fillPct = 0;
-  if (wasteFillLevelGetLastValidPercent(fillPct)) {
-    Serial.print(fillPct);
-    Serial.print(F(" fill_ever_valid=1"));
-  } else {
-    Serial.print(F("none fill_ever_valid="));
-    Serial.print(wasteFillLevelHasValidPercent() ? 1 : 0);
-  }
-
-  uint16_t lastDist = 0;
-  if (wasteSensorGetLastValidDistance(lastDist)) {
-    Serial.print(F(" | waste_last_valid_cm="));
-    Serial.print(lastDist);
-  }
-
-  Serial.println();
-}
-
 void setup() {
   Serial.begin(CONFIG_SERIAL_BAUD);
   delay(50);
 
   gpioInitSafeOutputsAndInputs();
   approachSensorBegin();
-  wasteSensorBegin();
-  wasteFillLevelBegin();
-  ultrasonicSchedulerBegin();
+  s_quietUntilMs = 0;
+  s_nextApproachMs = 0;
   lidControlBegin();
   ledStatusBegin();
   wifiManagerBegin();
@@ -142,17 +103,10 @@ void loop() {
 
   lidControlUpdate(now, approachSensorIsApproachDetected());
 
-  const UltrasonicMeasurementKind kind = ultrasonicSchedulerTick(now);
-
-  if (kind == UltrasonicMeasurementKind::Approach) {
+  if (runApproachMeasurementIfDue(now)) {
     ApproachSensorReading reading;
     approachSensorGetReading(reading);
     printApproachReading(reading, approachSensorIsApproachDetected());
-  } else if (kind == UltrasonicMeasurementKind::Waste) {
-    WasteSensorReading reading;
-    wasteSensorGetReading(reading);
-    wasteFillLevelApplyReading(reading);
-    printWasteReading(reading);
   }
 
   ledStatusUpdate();
@@ -170,27 +124,6 @@ void loop() {
     Serial.print(now);
     Serial.print(F(" approach_detected="));
     Serial.print(approachSensorIsApproachDetected() ? 1 : 0);
-
-    uint16_t validWasteCm = 0;
-    if (wasteSensorGetLastValidDistance(validWasteCm)) {
-      Serial.print(F(" waste_last_valid_cm="));
-      Serial.print(validWasteCm);
-    } else {
-      Serial.print(F(" waste_last_valid_cm=none"));
-    }
-
-    Serial.print(F(" cal_valid="));
-    Serial.print(wasteFillLevelIsCalibrationValid() ? 1 : 0);
-
-    uint8_t fillPct = 0;
-    if (wasteFillLevelGetLastValidPercent(fillPct)) {
-      Serial.print(F(" fill_pct="));
-      Serial.print(fillPct);
-    } else {
-      Serial.print(F(" fill_pct=none"));
-    }
-    Serial.print(F(" fill_ever_valid="));
-    Serial.print(wasteFillLevelHasValidPercent() ? 1 : 0);
 
     Serial.print(F(" lid="));
     Serial.print(lidControlGetLidState() == LidPositionState::Open ? F("OPEN")

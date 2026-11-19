@@ -12,7 +12,7 @@ struct ApproachSensorReading {
 
 void approachSensorBegin();
 
-// Invoked only by ultrasonic_scheduler (one HC-SR04 active at a time).
+// Invoked by main loop when approach sample interval and quiet period allow.
 void approachSensorRunMeasurement();
 
 void approachSensorGetReading(ApproachSensorReading& out);

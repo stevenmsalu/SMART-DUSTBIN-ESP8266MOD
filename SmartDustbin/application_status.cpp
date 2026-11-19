@@ -2,25 +2,20 @@
 
 #include "application_status.h"
 #include "approach_sensor.h"
-#include "waste_fill_level.h"
-#include "waste_sensor.h"
 
 void applicationStatusGetSnapshot(unsigned long nowMs,
                                   ApplicationStatusSnapshot& out) {
   out.uptimeMs = static_cast<uint32_t>(nowMs);
   out.approachDetected = approachSensorIsApproachDetected();
 
-  out.hasWasteDistanceLastValid =
-      wasteSensorGetLastValidDistance(out.wasteDistanceLastValidCm);
-
-  WasteSensorReading wasteLatest;
-  wasteSensorGetReading(wasteLatest);
-  out.wasteLatestAttemptValid = wasteLatest.valid;
-  out.wasteLatestTimedOut = wasteLatest.timedOut;
-  out.wasteLatestOutOfRange = wasteLatest.outOfRange;
-
-  out.hasFillPercentLastValid =
-      wasteFillLevelGetLastValidPercent(out.fillPercentLastValid);
+  // WP-11.1: waste subsystem removed; API fields left unavailable until WP-11.3.
+  out.hasWasteDistanceLastValid = false;
+  out.wasteDistanceLastValidCm = 0;
+  out.wasteLatestAttemptValid = false;
+  out.wasteLatestTimedOut = false;
+  out.wasteLatestOutOfRange = false;
+  out.hasFillPercentLastValid = false;
+  out.fillPercentLastValid = 0;
 
   out.lidState = lidControlGetLidState();
   out.lidCloseDelayPending = lidControlIsCloseDelayPending();
@@ -51,33 +46,6 @@ void applicationStatusPrintDiagnostic(const ApplicationStatusSnapshot& snap) {
   Serial.print(snap.uptimeMs);
   Serial.print(F(" approach="));
   Serial.print(snap.approachDetected ? 1 : 0);
-
-  Serial.print(F(" waste_last_valid_cm="));
-  if (snap.hasWasteDistanceLastValid) {
-    Serial.print(snap.wasteDistanceLastValidCm);
-  } else {
-    Serial.print(F("none"));
-  }
-
-  Serial.print(F(" waste_latest_valid="));
-  Serial.print(snap.wasteLatestAttemptValid ? 1 : 0);
-  if (!snap.wasteLatestAttemptValid) {
-    Serial.print(F(" latest_invalid_reason="));
-    if (snap.wasteLatestTimedOut) {
-      Serial.print(F("timeout"));
-    } else if (snap.wasteLatestOutOfRange) {
-      Serial.print(F("out_of_range"));
-    } else {
-      Serial.print(F("none"));
-    }
-  }
-
-  Serial.print(F(" fill_last_valid_pct="));
-  if (snap.hasFillPercentLastValid) {
-    Serial.print(snap.fillPercentLastValid);
-  } else {
-    Serial.print(F("none"));
-  }
 
   Serial.print(F(" lid="));
   Serial.print(lidLabel(snap.lidState));

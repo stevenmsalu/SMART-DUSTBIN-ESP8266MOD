@@ -3,7 +3,6 @@
 #include "config.h"
 #include "led_status.h"
 #include "pins.h"
-#include "waste_fill_level.h"
 
 static bool s_thresholdsValid = false;
 static bool s_warningLatched = false;
@@ -113,30 +112,9 @@ void ledStatusUpdate() {
     return;
   }
 
-  if (!wasteFillLevelHasValidPercent()) {
-    applyState(LedFillIndicatorState::Unknown, 0, false);
-    return;
-  }
-
-  uint8_t fillPct = 0;
-  if (!wasteFillLevelGetLastValidPercent(fillPct)) {
-    applyState(LedFillIndicatorState::Unknown, 0, false);
-    return;
-  }
-
-  if (!s_warningLatched) {
-    if (fillPct >= CONFIG_WARN_FILL_PERCENT) {
-      s_warningLatched = true;
-    }
-  } else if (fillPct <= CONFIG_WARN_CLEAR_PERCENT) {
-    s_warningLatched = false;
-  }
-
-  const LedFillIndicatorState next =
-      s_warningLatched ? LedFillIndicatorState::Warning
-                       : LedFillIndicatorState::Normal;
-
-  applyState(next, fillPct, true);
+  // WP-11.1: waste fill removed; fill-driven transitions resume in WP-11.2.
+  (void)s_warningLatched;
+  applyState(LedFillIndicatorState::Unknown, 0, false);
 }
 
 LedFillIndicatorState ledStatusGetState() {
