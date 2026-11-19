@@ -3,8 +3,14 @@
 
 #include <Arduino.h>
 
-#include "led_status.h"
 #include "lid_control.h"
+
+// Legacy fill-style indicator strings for HTTP until WP-11.3 (not used for logic).
+enum class LedFillIndicatorState : uint8_t {
+  Unknown = 0,
+  Normal = 1,
+  Warning = 2,
+};
 
 // Unified snapshot for WP-8 HTTP consumption (no heap allocation).
 struct ApplicationStatusSnapshot {

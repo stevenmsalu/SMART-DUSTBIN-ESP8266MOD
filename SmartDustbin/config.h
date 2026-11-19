@@ -30,10 +30,6 @@
 #define CONFIG_SERVO_ANGLE_OPEN 120
 #define CONFIG_LID_CLOSE_DELAY_MS 2000UL
 
-// --- Fill warning LEDs (WP-6) — provisional ---
-#define CONFIG_WARN_FILL_PERCENT 80
-#define CONFIG_WARN_CLEAR_PERCENT 75
-
 // Buzzer (later WP; GPIO2 not driven)
 // #define CONFIG_BUZZER_ALERT_MS         TBD
 // #define CONFIG_BUZZER_COOLDOWN_MS      TBD

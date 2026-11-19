@@ -12,7 +12,7 @@ void gpioInitSafeOutputsAndInputs() {
 
   // Servo D7: initialised by lid_control (WP-5); leave pin untouched here.
 
-  // D0/D3 LEDs: configured by led_status (WP-6).
+  // D0 white LED: configured by white_indicator.
 
   // D4 / GPIO2 buzzer: not configured (physically disconnected; boot strap)
 }

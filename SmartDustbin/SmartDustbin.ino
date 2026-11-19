@@ -5,8 +5,8 @@
 #include "config.h"
 #include "gpio_init.h"
 #include "http_api.h"
-#include "led_status.h"
 #include "lid_control.h"
+#include "white_indicator.h"
 #include "wifi_manager.h"
 
 static unsigned long s_lastHeartbeatMs = 0;
@@ -30,8 +30,8 @@ static bool runApproachMeasurementIfDue(unsigned long nowMs) {
 static void printBootBanner() {
   Serial.println();
   Serial.println(F("================================"));
-  Serial.println(F(" Smart Dustbin — WP-11.1"));
-  Serial.println(F(" Approach + lid (waste removed)"));
+  Serial.println(F(" Smart Dustbin — WP-11.2"));
+  Serial.println(F(" Approach + lid + white indicator"));
   Serial.println(F(" Dashboard + HTTP API"));
   Serial.println(F("================================"));
   Serial.print(F("Serial baud: "));
@@ -52,11 +52,6 @@ static void printBootBanner() {
   Serial.print(CONFIG_SERVO_ANGLE_OPEN);
   Serial.print(F(" close_delay_ms="));
   Serial.println(CONFIG_LID_CLOSE_DELAY_MS);
-  Serial.print(F("LED warn/clear: "));
-  Serial.print(CONFIG_WARN_FILL_PERCENT);
-  Serial.print(F("% / "));
-  Serial.print(CONFIG_WARN_CLEAR_PERCENT);
-  Serial.println(F("% (provisional; WP-11.2)"));
 
   Serial.println();
 }
@@ -90,7 +85,7 @@ void setup() {
   s_quietUntilMs = 0;
   s_nextApproachMs = 0;
   lidControlBegin();
-  ledStatusBegin();
+  whiteIndicatorBegin();
   wifiManagerBegin();
   httpApiBegin();
 
@@ -102,6 +97,7 @@ void loop() {
   const unsigned long now = millis();
 
   lidControlUpdate(now, approachSensorIsApproachDetected());
+  whiteIndicatorUpdate();
 
   if (runApproachMeasurementIfDue(now)) {
     ApproachSensorReading reading;
@@ -109,7 +105,6 @@ void loop() {
     printApproachReading(reading, approachSensorIsApproachDetected());
   }
 
-  ledStatusUpdate();
   wifiManagerUpdate(now);
   httpApiHandleClient();
 
@@ -133,22 +128,8 @@ void loop() {
     Serial.print(F(" close_pending="));
     Serial.print(lidControlIsCloseDelayPending() ? 1 : 0);
 
-    Serial.print(F(" led="));
-    switch (ledStatusGetState()) {
-      case LedFillIndicatorState::Normal:
-        Serial.print(F("NORMAL"));
-        break;
-      case LedFillIndicatorState::Warning:
-        Serial.print(F("WARNING"));
-        break;
-      default:
-        Serial.print(F("UNKNOWN"));
-        break;
-    }
     Serial.print(F(" white="));
-    Serial.print(ledStatusGetWhiteOn() ? 1 : 0);
-    Serial.print(F(" yellow="));
-    Serial.print(ledStatusGetYellowOn() ? 1 : 0);
+    Serial.print(whiteIndicatorIsOn() ? 1 : 0);
 
     Serial.println();
   }

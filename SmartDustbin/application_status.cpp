@@ -2,6 +2,11 @@
 
 #include "application_status.h"
 #include "approach_sensor.h"
+#include "white_indicator.h"
+
+static LedFillIndicatorState mapLegacyIndicator(bool whiteOn) {
+  return whiteOn ? LedFillIndicatorState::Normal : LedFillIndicatorState::Unknown;
+}
 
 void applicationStatusGetSnapshot(unsigned long nowMs,
                                   ApplicationStatusSnapshot& out) {
@@ -21,24 +26,14 @@ void applicationStatusGetSnapshot(unsigned long nowMs,
   out.lidCloseDelayPending = lidControlIsCloseDelayPending();
   out.servoTargetAngleDeg = lidControlGetServoTargetAngle();
 
-  out.ledIndicatorState = ledStatusGetState();
-  out.whiteLedOn = ledStatusGetWhiteOn();
-  out.yellowLedOn = ledStatusGetYellowOn();
+  const bool whiteOn = whiteIndicatorIsOn();
+  out.whiteLedOn = whiteOn;
+  out.yellowLedOn = false;
+  out.ledIndicatorState = mapLegacyIndicator(whiteOn);
 }
 
 static const __FlashStringHelper* lidLabel(LidPositionState st) {
   return (st == LidPositionState::Open) ? F("OPEN") : F("CLOSED");
-}
-
-static const __FlashStringHelper* ledLabel(LedFillIndicatorState st) {
-  switch (st) {
-    case LedFillIndicatorState::Normal:
-      return F("NORMAL");
-    case LedFillIndicatorState::Warning:
-      return F("WARNING");
-    default:
-      return F("UNKNOWN");
-  }
 }
 
 void applicationStatusPrintDiagnostic(const ApplicationStatusSnapshot& snap) {
@@ -52,12 +47,8 @@ void applicationStatusPrintDiagnostic(const ApplicationStatusSnapshot& snap) {
   Serial.print(F(" close_pending="));
   Serial.print(snap.lidCloseDelayPending ? 1 : 0);
 
-  Serial.print(F(" led="));
-  Serial.print(ledLabel(snap.ledIndicatorState));
   Serial.print(F(" white="));
   Serial.print(snap.whiteLedOn ? 1 : 0);
-  Serial.print(F(" yellow="));
-  Serial.print(snap.yellowLedOn ? 1 : 0);
 
   Serial.println();
 }
