@@ -1,6 +1,6 @@
 #include "dashboard_page.h"
 
-// Monitoring-only dashboard (WP-9) — no external CDN; served from flash.
+// Monitoring-only dashboard — no external CDN; served from flash.
 const char DASHBOARD_HTML[] PROGMEM = R"HTML(
 <!DOCTYPE html>
 <html lang="en">
@@ -30,13 +30,11 @@ h1{font-size:1.25rem;margin-bottom:4px}
 .pill.warn{background:#3d3316;color:var(--warn)}
 .pill.bad{background:#3d1c1f;color:var(--bad)}
 .pill.muted{background:#1e2633;color:var(--muted)}
-.bar{height:12px;background:#101821;border-radius:6px;overflow:hidden;margin-top:8px;border:1px solid var(--line)}
-.fill{height:100%;width:0;background:linear-gradient(90deg,#3dd68c,#f5c542);transition:width .4s}
 </style>
 </head>
 <body>
 <h1>Smart Dustbin Monitor</h1>
-<p class="sub">Local read-only dashboard · WP-9</p>
+<p class="sub">Local read-only dashboard · approach + lid</p>
 <div id="conn" class="banner bad">Connecting to device API…</div>
 <div class="grid">
 <section class="card"><h2>Device</h2>
@@ -46,11 +44,6 @@ h1{font-size:1.25rem;margin-bottom:4px}
 <div class="row"><span class="lab">Uptime</span><span class="val" id="uptime">—</span></div>
 <div class="row"><span class="lab">Last update</span><span class="val" id="lastUpd">—</span></div>
 </section>
-<section class="card"><h2>Fill level</h2>
-<div class="row"><span class="lab">Fill %</span><span class="val" id="fillPct">—</span></div>
-<div class="row"><span class="lab">State</span><span class="val" id="fillState"><span class="pill muted">—</span></span></div>
-<div class="bar"><div class="fill" id="fillBar"></div></div>
-</section>
 <section class="card"><h2>Approach</h2>
 <div class="row"><span class="lab">Detection</span><span class="val" id="approach">—</span></div>
 </section>
@@ -59,26 +52,18 @@ h1{font-size:1.25rem;margin-bottom:4px}
 <div class="row"><span class="lab">Servo target</span><span class="val" id="servoDeg">—</span></div>
 <div class="row"><span class="lab">Close delay</span><span class="val" id="closeDly">—</span></div>
 </section>
-<section class="card"><h2>LEDs</h2>
-<div class="row"><span class="lab">Indicator</span><span class="val" id="ledInd">—</span></div>
-<div class="row"><span class="lab">White</span><span class="val" id="ledW">—</span></div>
-<div class="row"><span class="lab">Yellow</span><span class="val" id="ledY">—</span></div>
-</section>
-<section class="card"><h2>Waste sensor</h2>
-<div class="row"><span class="lab">Last valid distance</span><span class="val" id="wDist">—</span></div>
-<div class="row"><span class="lab">Latest attempt</span><span class="val" id="wLatest">—</span></div>
-<div class="row"><span class="lab">Error reason</span><span class="val" id="wReason">—</span></div>
+<section class="card"><h2>White LED</h2>
+<div class="row"><span class="lab">Status (lid linked)</span><span class="val" id="ledW">—</span></div>
 </section>
 </div>
 <script>
 const POLL_MS=2500;
-let busy=false, timer=null, stale=false;
+let busy=false,timer=null,stale=false;
 function setText(id,t){const el=document.getElementById(id);if(el)el.textContent=t;}
-function pill(html){return'<span class="pill '+html+'">'+html.toUpperCase()+'</span>';}
+function pill(cls,label){return'<span class="pill '+cls+'">'+(label||cls).toUpperCase()+'</span>';}
 function fmtUptime(ms){if(ms==null)return'—';const s=Math.floor(ms/1000);const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);const r=s%60;
 return(h?h+'h ':'')+(m?m+'m ':'')+r+'s';}
 function setConn(cls,msg){const b=document.getElementById('conn');b.className='banner '+cls;b.textContent=msg;}
-function mapFillPill(ind){if(ind==='NORMAL')return pill('ok');if(ind==='WARNING')return pill('warn');return pill('muted');}
 async function refresh(){
 if(busy)return;busy=true;
 try{
@@ -95,27 +80,12 @@ setText('ipState',wifi&&health.wifi.ip?health.wifi.ip:'—');
 const up=status.device&&status.device.uptime_ms!=null?status.device.uptime_ms:(health.device&&health.device.uptime_ms);
 setText('uptime',fmtUptime(up));
 const appr=status.approach&&status.approach.detected;
-setText('approach',appr?'DETECTED':'CLEAR');
-document.getElementById('approach').innerHTML=appr?pill('warn'):pill('ok');
-const fill=status.fill&&status.fill.last_valid_percent;
-if(fill&&fill.available){setText('fillPct',fill.value+'%');document.getElementById('fillBar').style.width=Math.min(100,fill.value)+'%';}
-else{setText('fillPct','Unavailable');document.getElementById('fillBar').style.width='0';}
-const ind=status.leds&&status.leds.indicator?status.leds.indicator:'UNKNOWN';
-document.getElementById('fillState').innerHTML=mapFillPill(ind);
+document.getElementById('approach').innerHTML=appr?pill('warn','detected'):pill('ok','clear');
 const lid=status.lid||{};
 setText('lidState',lid.state||'—');
 setText('servoDeg',lid.servo_target_angle_deg!=null?lid.servo_target_angle_deg+'°':'—');
 setText('closeDly',lid.close_delay_pending?'Pending':'Not pending');
-setText('ledInd',ind);
 setText('ledW',status.leds&&status.leds.white_on?'ON':'OFF');
-setText('ledY',status.leds&&status.leds.yellow_on?'ON':'OFF');
-const w=status.waste||{};
-const lv=w.last_valid_distance_cm;
-if(lv&&lv.available)setText('wDist',lv.value+' cm'); else setText('wDist','Unavailable');
-const la=w.latest_attempt;
-if(!la){setText('wLatest','—');setText('wReason','—');}
-else if(la.valid){setText('wLatest','Valid');setText('wReason','—');}
-else{setText('wLatest','Invalid');setText('wReason',la.reason||'unknown');}
 }catch(e){
 if(!stale){stale=true;setConn('bad','API unavailable — showing last data if any');setText('apiState','Unavailable');}
 }finally{busy=false;}

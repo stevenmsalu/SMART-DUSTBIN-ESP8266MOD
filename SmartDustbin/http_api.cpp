@@ -9,46 +9,21 @@
 
 static ESP8266WebServer s_server(CONFIG_HTTP_PORT);
 
-static void writeQuoted(Print& out, const char* value) {
-  out.print('\"');
-  out.print(value);
-  out.print('\"');
+static void appendQuoted(String& out, const char* value) {
+  out += '\"';
+  out += value;
+  out += '\"';
 }
 
-static void writeLidState(Print& out, LidPositionState state) {
+static void appendLidState(String& out, LidPositionState state) {
   if (state == LidPositionState::Open) {
-    writeQuoted(out, "OPEN");
+    appendQuoted(out, "OPEN");
   } else {
-    writeQuoted(out, "CLOSED");
+    appendQuoted(out, "CLOSED");
   }
 }
 
-static void writeLedIndicator(Print& out, LedFillIndicatorState state) {
-  switch (state) {
-    case LedFillIndicatorState::Normal:
-      writeQuoted(out, "NORMAL");
-      break;
-    case LedFillIndicatorState::Warning:
-      writeQuoted(out, "WARNING");
-      break;
-    default:
-      writeQuoted(out, "UNKNOWN");
-      break;
-  }
-}
-
-static void writeLatestInvalidReason(Print& out,
-                                     const ApplicationStatusSnapshot& snap) {
-  if (snap.wasteLatestTimedOut) {
-    writeQuoted(out, "timeout");
-  } else if (snap.wasteLatestOutOfRange) {
-    writeQuoted(out, "out_of_range");
-  } else {
-    writeQuoted(out, "none");
-  }
-}
-
-static void writeStatusJson(Print& out, const ApplicationStatusSnapshot& snap) {
+static String buildStatusJson(const ApplicationStatusSnapshot& snap) {
   char ipBuf[16];
   const bool wifiUp = wifiManagerIsConnected();
   if (wifiUp) {
@@ -57,49 +32,59 @@ static void writeStatusJson(Print& out, const ApplicationStatusSnapshot& snap) {
     ipBuf[0] = '\0';
   }
 
-  out.print(F("{\"device\":{\"uptime_ms\":"));
-  out.print(snap.uptimeMs);
-  out.print(F("},\"approach\":{\"detected\":"));
-  out.print(snap.approachDetected ? F("true") : F("false"));
-  out.print(F("},\"waste\":{\"last_valid_distance_cm\":{\"available\":"));
-  out.print(snap.hasWasteDistanceLastValid ? F("true") : F("false"));
-  if (snap.hasWasteDistanceLastValid) {
-    out.print(F(",\"value\":"));
-    out.print(snap.wasteDistanceLastValidCm);
-  }
-  out.print(F("},\"latest_attempt\":{\"valid\":"));
-  out.print(snap.wasteLatestAttemptValid ? F("true") : F("false"));
-  if (!snap.wasteLatestAttemptValid) {
-    out.print(F(",\"reason\":"));
-    writeLatestInvalidReason(out, snap);
-  }
-  out.print(F("}},\"fill\":{\"last_valid_percent\":{\"available\":"));
-  out.print(snap.hasFillPercentLastValid ? F("true") : F("false"));
-  if (snap.hasFillPercentLastValid) {
-    out.print(F(",\"value\":"));
-    out.print(snap.fillPercentLastValid);
-  }
-  out.print(F("}},\"lid\":{\"state\":"));
-  writeLidState(out, snap.lidState);
-  out.print(F(",\"close_delay_pending\":"));
-  out.print(snap.lidCloseDelayPending ? F("true") : F("false"));
-  out.print(F(",\"servo_target_angle_deg\":"));
-  out.print(snap.servoTargetAngleDeg);
-  out.print(F("},\"leds\":{\"indicator\":"));
-  writeLedIndicator(out, snap.ledIndicatorState);
-  out.print(F(",\"white_on\":"));
-  out.print(snap.whiteLedOn ? F("true") : F("false"));
-  out.print(F(",\"yellow_on\":"));
-  out.print(snap.yellowLedOn ? F("true") : F("false"));
-  out.print(F("},\"network\":{\"wifi_connected\":"));
-  out.print(wifiUp ? F("true") : F("false"));
-  out.print(F(",\"ip\":"));
+  String json;
+  json.reserve(280);
+
+  json += F("{\"device\":{\"uptime_ms\":");
+  json += snap.uptimeMs;
+  json += F("},\"approach\":{\"detected\":");
+  json += snap.approachDetected ? F("true") : F("false");
+  json += F("},\"lid\":{\"state\":");
+  appendLidState(json, snap.lidState);
+  json += F(",\"close_delay_pending\":");
+  json += snap.lidCloseDelayPending ? F("true") : F("false");
+  json += F(",\"servo_target_angle_deg\":");
+  json += snap.servoTargetAngleDeg;
+  json += F("},\"leds\":{\"white_on\":");
+  json += snap.whiteLedOn ? F("true") : F("false");
+  json += F("},\"network\":{\"wifi_connected\":");
+  json += wifiUp ? F("true") : F("false");
+  json += F(",\"ip\":");
   if (wifiUp && ipBuf[0] != '\0') {
-    writeQuoted(out, ipBuf);
+    appendQuoted(json, ipBuf);
   } else {
-    out.print(F("null"));
+    json += F("null");
   }
-  out.print(F("}}"));
+  json += F("}}");
+  return json;
+}
+
+static String buildHealthJson(const ApplicationStatusSnapshot& snap) {
+  char ipBuf[16];
+  const bool wifiUp = wifiManagerIsConnected();
+  if (wifiUp) {
+    wifiManagerGetIpAddress(ipBuf, sizeof(ipBuf));
+  } else {
+    ipBuf[0] = '\0';
+  }
+
+  String json;
+  json.reserve(160);
+
+  json += F("{\"device\":{\"status\":");
+  appendQuoted(json, "ok");
+  json += F(",\"uptime_ms\":");
+  json += snap.uptimeMs;
+  json += F("},\"wifi\":{\"connected\":");
+  json += wifiUp ? F("true") : F("false");
+  json += F(",\"ip\":");
+  if (wifiUp && ipBuf[0] != '\0') {
+    appendQuoted(json, ipBuf);
+  } else {
+    json += F("null");
+  }
+  json += F("},\"features\":{\"monitoring_only\":true}}");
+  return json;
 }
 
 static void handleDashboardRoot() {
@@ -111,9 +96,8 @@ static void handleApiStatus() {
   ApplicationStatusSnapshot snap;
   applicationStatusGetSnapshot(millis(), snap);
 
-  s_server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  s_server.send(200, F("application/json"), F(""));
-  writeStatusJson(s_server.client(), snap);
+  const String json = buildStatusJson(snap);
+  s_server.send(200, F("application/json"), json);
   Serial.println(F("[http] GET /api/status"));
 }
 
@@ -121,30 +105,8 @@ static void handleApiHealth() {
   ApplicationStatusSnapshot snap;
   applicationStatusGetSnapshot(millis(), snap);
 
-  char ipBuf[16];
-  const bool wifiUp = wifiManagerIsConnected();
-  if (wifiUp) {
-    wifiManagerGetIpAddress(ipBuf, sizeof(ipBuf));
-  } else {
-    ipBuf[0] = '\0';
-  }
-
-  s_server.setContentLength(CONTENT_LENGTH_UNKNOWN);
-  s_server.send(200, F("application/json"), F(""));
-  Print& out = s_server.client();
-  out.print(F("{\"device\":{\"status\":"));
-  writeQuoted(out, "ok");
-  out.print(F(",\"uptime_ms\":"));
-  out.print(snap.uptimeMs);
-  out.print(F("},\"wifi\":{\"connected\":"));
-  out.print(wifiUp ? F("true") : F("false"));
-  out.print(F(",\"ip\":"));
-  if (wifiUp && ipBuf[0] != '\0') {
-    writeQuoted(out, ipBuf);
-  } else {
-    out.print(F("null"));
-  }
-  out.print(F("},\"features\":{\"monitoring_only\":true}}"));
+  const String json = buildHealthJson(snap);
+  s_server.send(200, F("application/json"), json);
   Serial.println(F("[http] GET /api/health"));
 }
 

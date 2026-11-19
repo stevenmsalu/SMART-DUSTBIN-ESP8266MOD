@@ -4,32 +4,16 @@
 #include "approach_sensor.h"
 #include "white_indicator.h"
 
-static LedFillIndicatorState mapLegacyIndicator(bool whiteOn) {
-  return whiteOn ? LedFillIndicatorState::Normal : LedFillIndicatorState::Unknown;
-}
-
 void applicationStatusGetSnapshot(unsigned long nowMs,
                                   ApplicationStatusSnapshot& out) {
   out.uptimeMs = static_cast<uint32_t>(nowMs);
   out.approachDetected = approachSensorIsApproachDetected();
 
-  // WP-11.1: waste subsystem removed; API fields left unavailable until WP-11.3.
-  out.hasWasteDistanceLastValid = false;
-  out.wasteDistanceLastValidCm = 0;
-  out.wasteLatestAttemptValid = false;
-  out.wasteLatestTimedOut = false;
-  out.wasteLatestOutOfRange = false;
-  out.hasFillPercentLastValid = false;
-  out.fillPercentLastValid = 0;
-
   out.lidState = lidControlGetLidState();
   out.lidCloseDelayPending = lidControlIsCloseDelayPending();
   out.servoTargetAngleDeg = lidControlGetServoTargetAngle();
 
-  const bool whiteOn = whiteIndicatorIsOn();
-  out.whiteLedOn = whiteOn;
-  out.yellowLedOn = false;
-  out.ledIndicatorState = mapLegacyIndicator(whiteOn);
+  out.whiteLedOn = whiteIndicatorIsOn();
 }
 
 static const __FlashStringHelper* lidLabel(LidPositionState st) {
