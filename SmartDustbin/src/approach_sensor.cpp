@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
 #include "approach_sensor.h"
-#include "config.h"
+#include "../config.h"
 #include "hcsr04_common.h"
-#include "pins.h"
+#include "../pins.h"
 
 static ApproachSensorReading s_last = {};
 static bool s_approachDetected = false;

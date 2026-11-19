@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-#include "config.h"
+#include "../config.h"
 #include "lid_control.h"
-#include "pins.h"
+#include "../pins.h"
 
 static Servo s_servo;
 static LidPositionState s_lidState = LidPositionState::Closed;

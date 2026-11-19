@@ -2,7 +2,7 @@
 #include <ESP8266WebServer.h>
 
 #include "application_status.h"
-#include "config.h"
+#include "../config.h"
 #include "dashboard_page.h"
 #include "http_api.h"
 #include "wifi_manager.h"

@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
-#include "config.h"
-#include "wifi_config.h"
+#include "../config.h"
+#include "../wifi_config.h"
 #include "wifi_manager.h"
 
 static WifiManagerState s_state = WifiManagerState::Disconnected;

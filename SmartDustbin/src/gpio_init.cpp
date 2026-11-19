@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "gpio_init.h"
-#include "pins.h"
+#include "../pins.h"
 
 void gpioInitSafeOutputsAndInputs() {
   // HC-SR04: TRIG idle LOW; no measurement pulses in WP-1

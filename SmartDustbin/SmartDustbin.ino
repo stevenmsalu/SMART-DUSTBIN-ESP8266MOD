@@ -1,13 +1,13 @@
 #include <Arduino.h>
 
-#include "application_status.h"
-#include "approach_sensor.h"
+#include "src/application_status.h"
+#include "src/approach_sensor.h"
 #include "config.h"
-#include "gpio_init.h"
-#include "http_api.h"
-#include "lid_control.h"
-#include "white_indicator.h"
-#include "wifi_manager.h"
+#include "src/gpio_init.h"
+#include "src/http_api.h"
+#include "src/lid_control.h"
+#include "src/white_indicator.h"
+#include "src/wifi_manager.h"
 
 static unsigned long s_lastHeartbeatMs = 0;
 static unsigned long s_quietUntilMs = 0;

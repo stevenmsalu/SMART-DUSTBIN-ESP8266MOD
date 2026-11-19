@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "lid_control.h"
-#include "pins.h"
+#include "../pins.h"
 #include "white_indicator.h"
 
 static bool s_on = false;
