@@ -24,3 +24,6 @@ Desktop.ini
 # Optional local env (future tooling — keep minimal)
 .env
 .env.*
+
+# Smart Dustbin gateway (local upstream IP)
+tools/smartdustbin-gateway/config.json

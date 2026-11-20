@@ -1,0 +1,1 @@
+"""Smart Dustbin local API gateway (WP-D-G2)."""
