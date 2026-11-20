@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Dustbin</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<h1>Smart Dustbin</h1>
+<p class="sub">Live status from your dustbin</p>
+<div id="conn" class="banner bad">Connecting…</div>
+<div class="grid">
+<section class="card hero">
+<h2>How the bin is behaving</h2>
+<div class="row"><span class="lab">Something nearby</span><span class="val" id="nearby">—</span></div>
+<div class="row"><span class="lab">Lid position</span><span class="val" id="lidPos">—</span></div>
+<div class="row"><span class="lab">Closing soon</span><span class="val" id="closingSoon">—</span></div>
+<div class="row"><span class="lab">Indicator light</span><span class="val" id="indLight">—</span></div>
+<p class="foot">Indicator turns on while the lid is open.</p>
+</section>
+<section class="card">
+<h2>Network</h2>
+<div class="row"><span class="lab">Connection</span><span class="val" id="wifiState">—</span></div>
+<div class="row"><span class="lab">Network address</span><span class="val addr" id="ipState">—</span></div>
+<div class="row"><span class="lab">Last refreshed</span><span class="val" id="lastUpd">—</span></div>
+</section>
+<details class="card">
+<summary>Technical details</summary>
+<div class="inner">
+<div class="row"><span class="lab">Motor angle</span><span class="val" id="motorDeg">—</span></div>
+<div class="row"><span class="lab">Powered on for</span><span class="val" id="uptime">—</span></div>
+<p class="foot">View only — no remote control. Ultrasonic sensor measures distance; it does not identify people.</p>
+</div>
+</details>
+</div>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
