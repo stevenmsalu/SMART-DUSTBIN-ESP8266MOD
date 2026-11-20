@@ -72,6 +72,20 @@ cd tools\smartdustbin-gateway
 python -m unittest test_gateway.py -v
 ```
 
+## Dell scripts (WP-D-G3)
+
+From `tools\smartdustbin-gateway\scripts`:
+
+| Script | Purpose |
+|--------|---------|
+| `Start-SmartDustbinStack.ps1` | Gateway window + tunnel window (waits for HTTP 200 `/api/health`) |
+| `Start-SmartDustbinGateway.ps1` | Gateway only (`127.0.0.1:8788`) |
+| `Start-SmartDustbinTunnel.ps1` | `cloudflared` → `http://127.0.0.1:8788` |
+| `Verify-SmartDustbinLocal.ps1` | Local listener + `/api/health` + `/api/status` |
+| `Validate-SmartDustbinTunnel.ps1` | Mock ESP8266 + gateway + tunnel E2E (cleans up its own processes) |
+
 ## PD dashboard link
 
-After Quick Tunnel (WP-D-G3+) points at `http://127.0.0.1:8788`, set `API_BASE_URL` in `deployment/pd-hosting/config.js` to the tunnel URL (no trailing slash).
+After Quick Tunnel points at `http://127.0.0.1:8788`, set `API_BASE_URL` in `deployment/pd-hosting/config.js` to the tunnel URL (no trailing slash).
+
+Public browser origin: `https://kamanishasalle.pdinformationsystems.com`
