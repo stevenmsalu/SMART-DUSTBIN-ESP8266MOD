@@ -74,3 +74,51 @@ bool wifiManagerGetIpAddress(char* buffer, size_t bufferLen) {
   snprintf(buffer, bufferLen, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
   return true;
 }
+
+static const __FlashStringHelper* wifiStatusLabel(int status) {
+  switch (status) {
+    case WL_IDLE_STATUS:
+      return F("WL_IDLE_STATUS");
+    case WL_NO_SSID_AVAIL:
+      return F("WL_NO_SSID_AVAIL");
+    case WL_SCAN_COMPLETED:
+      return F("WL_SCAN_COMPLETED");
+    case WL_CONNECTED:
+      return F("WL_CONNECTED");
+    case WL_CONNECT_FAILED:
+      return F("WL_CONNECT_FAILED");
+    case WL_CONNECTION_LOST:
+      return F("WL_CONNECTION_LOST");
+    case WL_DISCONNECTED:
+      return F("WL_DISCONNECTED");
+    case WL_NO_SHIELD:
+      return F("WL_NO_SHIELD");
+    default:
+      return F("WL_UNKNOWN");
+  }
+}
+
+void wifiManagerPrintPeriodicDiagnostic() {
+  const int status = WiFi.status();
+  const bool connected = (status == WL_CONNECTED);
+
+  Serial.print(F("[wifi] status="));
+  Serial.print(status);
+  Serial.print(F(" ("));
+  Serial.print(wifiStatusLabel(status));
+  Serial.print(F(") connected="));
+  Serial.println(connected ? F("true") : F("false"));
+
+  if (!connected) {
+    return;
+  }
+
+  Serial.print(F("[wifi] ip="));
+  Serial.println(WiFi.localIP());
+  Serial.print(F("[wifi] gateway="));
+  Serial.println(WiFi.gatewayIP());
+  Serial.print(F("[wifi] subnet="));
+  Serial.println(WiFi.subnetMask());
+  Serial.print(F("[wifi] rssi="));
+  Serial.println(WiFi.RSSI());
+}

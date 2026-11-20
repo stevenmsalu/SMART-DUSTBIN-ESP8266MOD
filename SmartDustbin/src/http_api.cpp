@@ -115,7 +115,7 @@ void httpApiBegin() {
   s_server.on(F("/api/status"), HTTP_GET, handleApiStatus);
   s_server.on(F("/api/health"), HTTP_GET, handleApiHealth);
   s_server.begin();
-  Serial.print(F("[http] listening port "));
+  Serial.print(F("[http] server_started=true port="));
   Serial.println(CONFIG_HTTP_PORT);
 }
 

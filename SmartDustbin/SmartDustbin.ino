@@ -111,6 +111,8 @@ void loop() {
   if (now - s_lastHeartbeatMs >= CONFIG_HEARTBEAT_MS) {
     s_lastHeartbeatMs = now;
 
+    wifiManagerPrintPeriodicDiagnostic();
+
     ApplicationStatusSnapshot snapshot;
     applicationStatusGetSnapshot(now, snapshot);
     applicationStatusPrintDiagnostic(snapshot);

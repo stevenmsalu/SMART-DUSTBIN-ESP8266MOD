@@ -20,4 +20,7 @@ WifiManagerState wifiManagerGetState();
 // Writes dotted-quad or empty string; returns false if not connected.
 bool wifiManagerGetIpAddress(char* buffer, size_t bufferLen);
 
+// Periodic serial diagnostics (call from heartbeat; no credentials logged).
+void wifiManagerPrintPeriodicDiagnostic();
+
 #endif

@@ -4,5 +4,5 @@
  * Use no trailing slash on API_BASE_URL.
  */
 window.SMART_DUSTBIN_CONFIG = {
-  API_BASE_URL: "https://YOUR-CURRENT-QUICK-TUNNEL.trycloudflare.com"
+  API_BASE_URL: "https://romance-exposed-prominent-should.trycloudflare.com"
 };
